@@ -1,0 +1,56 @@
+:root { --navy: #0f2742; --amber: #f2a900; --surface: #f3f5f9; --ink: #10202f; }
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--navy); overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #fff; }
+
+/* Bingkai aplikasi: menghormati area aman (poni/notch & bar gestur) */
+.app-frame {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
+  bottom: env(safe-area-inset-bottom, 0px);
+  width: calc(100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+  height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  border: 0;
+  background: var(--surface);
+}
+
+.layar {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .75rem; padding: 2rem 1.5rem; text-align: center; background: var(--navy);
+}
+.logo { border-radius: 18px; }
+.judul-muat { margin: .25rem 0 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -.01em; }
+.teks-kecil { margin: 0; font-size: .9rem; color: rgba(255,255,255,.7); }
+.layar h1 { margin: .25rem 0 0; font-size: 1.3rem; }
+.layar p { margin: 0; max-width: 34ch; line-height: 1.55; color: rgba(255,255,255,.78); }
+
+.spinner {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.2); border-top-color: var(--amber);
+  animation: putar .9s linear infinite;
+}
+@keyframes putar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.5s; } }
+
+.aksi { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; align-items: center; margin-top: .5rem; }
+.tombol {
+  font: inherit; font-weight: 600; padding: .65rem 1.2rem; border: 0; border-radius: 8px;
+  background: var(--amber); color: var(--navy); cursor: pointer; min-height: 44px;
+}
+.tombol.kecil { padding: .45rem .9rem; min-height: 38px; }
+.tombol.sekunder { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.35); }
+.tombol:focus-visible, .tautan:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.tautan { color: #fff; text-decoration: underline; }
+
+.bar {
+  position: fixed; z-index: 20; left: 8px; right: 8px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; justify-content: space-between;
+  padding: .7rem .9rem; border-radius: 12px; background: var(--navy); color: #fff;
+  box-shadow: 0 6px 24px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.14); font-size: .92rem;
+}
+.noscript { padding: 2rem; }
