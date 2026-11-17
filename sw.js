@@ -1,6 +1,6 @@
 /* Service worker cangkang PWA. Hanya mengurus berkas milik cangkang (satu origin);
    aplikasi Apps Script di dalam iframe TIDAK pernah dicache atau disentuh. */
-const CACHE = 'sim-karyawan-pwa-v1';   // naikkan angkanya (v2, v3, ...) setiap kali berkas cangkang diubah
+const CACHE = 'sim-karyawan-pwa-v2';   // naikkan angkanya (v2, v3, ...) setiap kali berkas cangkang diubah
 const ASET = [
   './', './index.html', './style.css', './app.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png'

@@ -16,9 +16,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Aplikasi Apps Script ditampilkan layar penuh. Izin kamera & lokasi harus diteruskan lewat atribut "allow". -->
-  <iframe id="app" class="app-frame" title="SIM Karyawan &amp; Aset"
-          allow="camera *; geolocation *; clipboard-write *; fullscreen *"></iframe>
+  <!-- Bingkai aplikasi dibuat oleh app.js (agar bisa diulang dengan mode lain bila gagal). -->
 
   <div id="layar-muat" class="layar" role="status" aria-live="polite">
     <img class="logo" src="icons/icon-192.png" alt="" width="84" height="84">
@@ -35,6 +33,13 @@
       <button id="btn-coba" type="button" class="tombol">Coba lagi</button>
       <a id="link-langsung" class="tautan" target="_blank" rel="noopener noreferrer" hidden>Buka tanpa PWA</a>
     </div>
+  </div>
+
+  <div id="bar-masalah" class="bar" hidden role="alert">
+    <span>Aplikasi tidak tampil?</span>
+    <button id="btn-langsung-sekali" type="button" class="tombol kecil">Buka langsung</button>
+    <button id="btn-langsung-selalu" type="button" class="tombol kecil sekunder">Selalu buka langsung</button>
+    <button id="btn-tutup-masalah" type="button" class="tombol kecil sekunder" aria-label="Tutup">Tutup</button>
   </div>
 
   <div id="bar-pasang" class="bar" hidden>

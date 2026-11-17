@@ -4,15 +4,29 @@
 
   // ===================== PENGATURAN: isi sekali =====================
   // Salin URL web app dari Apps Script (Deploy > Manage deployments), harus berakhiran /exec
-  var URL_WEBAPP = 'https://script.google.com/macros/s/AKfycby5P7PGCH6gKGIfC45AsuTXORWoSOX1dFhwGkmtPSY9yiH5hUBIMl73q07_gYAq12c/exec';
+  var URL_WEBAPP = 'GANTI_DENGAN_URL_WEB_APP_ANDA';
   // ==================================================================
 
   var POLA_URL = /^https:\/\/script\.google\.com\/(?:a\/macros\/[A-Za-z0-9.\-]+|macros)\/s\/[A-Za-z0-9_\-]+\/exec$/;
-  var BATAS_MUAT_MS = 25000;
+  var POLA_ASAL = /^https:\/\/[a-z0-9.\-]+\.googleusercontent\.com$/;   // asal tanda "siap" dari aplikasi
+  var BATAS_MUAT_MS = 25000;   // bingkai belum selesai dimuat
+  var BATAS_SIAP_MS = 18000;   // bingkai termuat, tetapi aplikasi belum memberi tanda "siap"
+  var KUNCI_MODE = 'pwa_mode';
+  var NORMAL = 'normal', TANPA_KUKI = 'credentialless', LANGSUNG = 'langsung';
+  var IZIN_BINGKAI = 'camera *; geolocation *; clipboard-write *; fullscreen *';
 
   var $ = function (id) { return document.getElementById(id); };
-  var frame = $('app'), layarMuat = $('layar-muat'), layarPesan = $('layar-pesan');
-  var timerMuat = null, sudahMuat = false;
+  var layarMuat = $('layar-muat'), layarPesan = $('layar-pesan'), barMasalah = $('bar-masalah');
+  var frame = null, timerMuat = null, timerSiap = null, sudahMuat = false, siap = false;
+  var dukungTanpaKuki = 'credentialless' in document.createElement('iframe');
+
+  function bacaMode() {
+    try { var m = localStorage.getItem(KUNCI_MODE); if (m === LANGSUNG || (m === TANPA_KUKI && dukungTanpaKuki)) return m; } catch (e) { /* penyimpanan dibatasi */ }
+    return NORMAL;
+  }
+  function simpanMode(m) { try { localStorage.setItem(KUNCI_MODE, m); } catch (e) { /* abaikan */ } }
+  try { if (/[?&]reset(?:[=&]|$)/.test(window.location.search)) localStorage.removeItem(KUNCI_MODE); } catch (e) { /* abaikan */ }
+  var mode = bacaMode();
 
   function tampilPesan(judul, isi, tombolLangsung) {
     $('pesan-judul').textContent = judul;
@@ -23,10 +37,25 @@
     layarPesan.hidden = false;
   }
 
+  function bukaLangsung() { window.location.replace(URL_WEBAPP); }   // tanpa bingkai: berfungsi walau bingkai diblokir akun Google
+
+  function buatFrame(tanpaKuki) {
+    if (frame && frame.parentNode) frame.parentNode.removeChild(frame);
+    var f = document.createElement('iframe');
+    f.className = 'app-frame';
+    f.setAttribute('title', 'SIM Karyawan & Aset');
+    f.setAttribute('allow', IZIN_BINGKAI);
+    if (tanpaKuki) f.setAttribute('credentialless', '');   // tanpa cookie akun Google (seperti mode samaran)
+    f.addEventListener('load', saatFrameMuat);
+    document.body.insertBefore(f, document.body.firstChild);
+    frame = f;
+    return f;
+  }
+
   function mulaiMuat() {
-    clearTimeout(timerMuat);
-    sudahMuat = false;
-    layarPesan.hidden = true;
+    clearTimeout(timerMuat); clearTimeout(timerSiap);
+    sudahMuat = false; siap = false;
+    layarPesan.hidden = true; barMasalah.hidden = true;
 
     if (!POLA_URL.test(URL_WEBAPP)) {
       $('btn-coba').hidden = true;
@@ -35,25 +64,47 @@
       return;
     }
     $('btn-coba').hidden = false;
+    if (mode === LANGSUNG) { bukaLangsung(); return; }
     if (!navigator.onLine) { tampilPesan('Tidak ada koneksi internet', 'Aplikasi memerlukan internet. Periksa jaringan Anda, lalu coba lagi.', true); return; }
 
     layarMuat.hidden = false;
-    frame.src = URL_WEBAPP + (URL_WEBAPP.indexOf('?') < 0 ? '?' : '&') + 'pwa=1&t=' + Date.now();
+    var f = buatFrame(mode === TANPA_KUKI);
+    f.src = URL_WEBAPP + (URL_WEBAPP.indexOf('?') < 0 ? '?' : '&') + 'pwa=1&t=' + Date.now();
     timerMuat = setTimeout(function () {
       if (!sudahMuat) tampilPesan('Memuat lebih lama dari biasa',
         'Koneksi mungkin lambat. Anda bisa mencoba lagi, atau membuka aplikasi tanpa PWA.', true);
     }, BATAS_MUAT_MS);
   }
 
-  frame.addEventListener('load', function () {
-    if (!frame.getAttribute('src')) return;
+  function saatFrameMuat() {
+    if (!frame || !frame.getAttribute('src')) return;
     sudahMuat = true;
-    clearTimeout(timerMuat);
+    clearTimeout(timerMuat); clearTimeout(timerSiap);
     layarMuat.hidden = true;
     layarPesan.hidden = true;
+    timerSiap = setTimeout(gagalSiap, BATAS_SIAP_MS);
+  }
+
+  // Aplikasi mengirim {simReady:true} setelah semua skripnya termuat. Tanpa tanda itu, halaman kemungkinan
+  // adalah halaman error Google (mis. akun Google ganda), sehingga coba mode lain secara otomatis.
+  function gagalSiap() {
+    if (siap) return;
+    if (mode === NORMAL && dukungTanpaKuki) { mode = TANPA_KUKI; mulaiMuat(); return; }
+    barMasalah.hidden = false;
+  }
+
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.simReady !== true || !POLA_ASAL.test(e.origin)) return;
+    siap = true;
+    clearTimeout(timerSiap);
+    barMasalah.hidden = true;
+    if (mode !== LANGSUNG) simpanMode(mode);   // ingat mode yang berhasil untuk peluncuran berikutnya
   });
 
   $('btn-coba').addEventListener('click', mulaiMuat);
+  $('btn-langsung-sekali').addEventListener('click', bukaLangsung);
+  $('btn-langsung-selalu').addEventListener('click', function () { simpanMode(LANGSUNG); bukaLangsung(); });
+  $('btn-tutup-masalah').addEventListener('click', function () { barMasalah.hidden = true; });
   window.addEventListener('online', function () { if (!sudahMuat) mulaiMuat(); });
   window.addEventListener('offline', function () {
     if (!sudahMuat) tampilPesan('Tidak ada koneksi internet', 'Aplikasi memerlukan internet. Periksa jaringan Anda, lalu coba lagi.', true);

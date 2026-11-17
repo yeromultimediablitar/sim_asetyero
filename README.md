@@ -3,6 +3,11 @@
 Folder ini adalah "cangkang" PWA yang menampilkan aplikasi Google Apps Script layar penuh dan
 membuatnya bisa dipasang di layar utama HP/komputer. Aplikasi sebenarnya tetap berjalan di Apps Script.
 
+## Urutan penting
+1. Deploy `Kode.gs` + `Index.html` terbaru di Apps Script (versi baru) **lebih dulu**. Cangkang bergantung pada tanda
+   "siap" yang dikirim `Index.html`; tanpa itu cangkang mengira aplikasi gagal dimuat.
+2. Baru unggah folder ini ke GitHub.
+
 ## Langkah 1 — isi URL web app
 1. Apps Script: **Deploy > Manage deployments**, salin **Web app URL** (berakhiran `/exec`).
 2. Buka `app.js`, ganti `GANTI_DENGAN_URL_WEB_APP_ANDA` dengan URL itu.
@@ -25,3 +30,15 @@ membuatnya bisa dipasang di layar utama HP/komputer. Aplikasi sebenarnya tetap b
 ## Jangan taruh rahasia di repository ini
 Repository bersifat publik. URL web app memang bukan rahasia (aplikasi dilindungi login), tetapi jangan
 menyimpan password, token, atau ID spreadsheet di sini.
+
+## Bila aplikasi tidak tampil (halaman error Google di dalam PWA)
+Kadang browser yang sedang login ke akun Google (terutama lebih dari satu akun) membuat Google menolak aplikasi
+yang ditanam di bingkai. Cangkang menanganinya otomatis, berurutan:
+1. Memuat normal. Bila aplikasi tidak memberi tanda "siap" dalam 18 detik...
+2. ...mencoba mode **tanpa cookie akun Google** (atribut `credentialless`, hanya Chrome/Edge/Brave).
+3. Bila masih gagal, muncul bar **"Aplikasi tidak tampil?"** dengan tombol **Buka langsung** / **Selalu buka langsung**
+   (membuka aplikasi tanpa bingkai).
+
+Mode yang berhasil diingat untuk peluncuran berikutnya. Untuk mengembalikan ke mode normal, buka alamat PWA
+dengan tambahan `?reset` (contoh: `https://NAMAANDA.github.io/sim-karyawan/?reset`).
+Catatan: pada mode `credentialless`, sesi login tidak disimpan antar peluncuran (harus login tiap kali dibuka).
