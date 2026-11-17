@@ -4,7 +4,7 @@
 
   // ===================== PENGATURAN: isi sekali =====================
   // Salin URL web app dari Apps Script (Deploy > Manage deployments), harus berakhiran /exec
-  var URL_WEBAPP = 'GANTI_DENGAN_URL_WEB_APP_ANDA';
+  var URL_WEBAPP = 'https://script.google.com/macros/s/AKfycby5P7PGCH6gKGIfC45AsuTXORWoSOX1dFhwGkmtPSY9yiH5hUBIMl73q07_gYAq12c/exec';
   // ==================================================================
 
   var POLA_URL = /^https:\/\/script\.google\.com\/(?:a\/macros\/[A-Za-z0-9.\-]+|macros)\/s\/[A-Za-z0-9_\-]+\/exec$/;
