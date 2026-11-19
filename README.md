@@ -8,7 +8,11 @@ membuatnya bisa dipasang di layar utama HP/komputer. Aplikasi sebenarnya tetap b
    "siap" yang dikirim `Index.html`; tanpa itu cangkang mengira aplikasi gagal dimuat.
 2. Baru unggah folder ini ke GitHub.
 
-## Langkah 1 — isi URL web app
+## Langkah 1 — URL web app (sudah terisi)
+`URL_WEBAPP` di `app.js` sudah berisi URL web app Anda. Ubah hanya bila Anda membuat deployment BARU
+(deployment baru = URL baru). Memperbarui versi pada deployment yang sama tidak mengubah URL.
+
+(Langkah lama untuk referensi:) isi URL web app
 1. Apps Script: **Deploy > Manage deployments**, salin **Web app URL** (berakhiran `/exec`).
 2. Buka `app.js`, ganti `GANTI_DENGAN_URL_WEB_APP_ANDA` dengan URL itu.
 
@@ -67,3 +71,12 @@ Penyebab yang paling sering:
 4. **Ajakan pasang pernah ditutup.** Pakai menu browser (Chrome: tiga titik, lalu *Pasang aplikasi*), atau buka `?reset`.
 5. **Service worker belum aktif.** Buka halaman, tunggu beberapa detik, muat ulang sekali.
 Catatan: "Tambahkan ke layar utama" hanya membuat pintasan. Yang Anda cari adalah **"Pasang aplikasi"**.
+
+## Cara paling pasti mengetahui kenapa tidak bisa dipasang (di komputer)
+Chrome di komputer menyebutkan alasan persisnya:
+1. Buka alamat PWA di Chrome komputer, tekan **F12**.
+2. Tab **Application** > **Manifest**. Lihat bagian **Installability**: daftar masalah yang menghalangi pemasangan
+   (mis. "No matching service worker detected", "Manifest does not contain a suitable icon", "start_url not in scope").
+3. Tab **Application** > **Service workers**: harus tertulis *activated and is running*.
+4. Tab **Network**: pastikan tidak ada berkas bertanda merah/404 (terutama di folder `icons`).
+Kirim tangkapan layar bagian Installability bila masih bermasalah.

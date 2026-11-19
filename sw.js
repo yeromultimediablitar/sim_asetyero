@@ -1,13 +1,23 @@
 /* Service worker cangkang PWA. Hanya mengurus berkas milik cangkang (satu origin);
    aplikasi Apps Script di dalam iframe TIDAK pernah dicache atau disentuh. */
-const CACHE = 'sim-karyawan-pwa-v4';   // naikkan angkanya (v2, v3, ...) setiap kali berkas cangkang diubah
+const CACHE = 'sim-karyawan-pwa-v5';   // naikkan angkanya (v2, v3, ...) setiap kali berkas cangkang diubah
 const ASET = [
   './', './index.html', './style.css', './app.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png'
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASET)));
+  // Simpan tiap berkas sendiri-sendiri: satu berkas yang hilang/gagal TIDAK boleh membatalkan seluruh instalasi
+  // (cache.addAll akan menolak semuanya bila satu saja gagal, sehingga PWA tidak bisa dipasang).
+  e.waitUntil(
+    caches.open(CACHE).then((c) =>
+      Promise.all(ASET.map((u) =>
+        fetch(new Request(u, { cache: 'reload' }))
+          .then((res) => (res && res.ok ? c.put(u, res) : undefined))
+          .catch(() => undefined)
+      ))
+    )
+  );
 });
 
 self.addEventListener('activate', (e) => {

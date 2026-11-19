@@ -3,7 +3,7 @@
   'use strict';
 
   // ===================== PENGATURAN: isi sekali =====================
-  // Salin URL web app dari Apps Script (Deploy > Manage deployments), harus berakhiran /exec
+  // URL web app Apps Script (berakhiran /exec). Bila Anda membuat deployment BARU, URL-nya berubah dan harus diisi ulang di sini.
   var URL_WEBAPP = 'https://script.google.com/macros/s/AKfycby5P7PGCH6gKGIfC45AsuTXORWoSOX1dFhwGkmtPSY9yiH5hUBIMl73q07_gYAq12c/exec';
   // 'otomatis' = tampilkan di dalam PWA (dengan cadangan otomatis).
   // 'langsung' = selalu buka aplikasi langsung tanpa bingkai (paling pasti berhasil bila bingkai bermasalah).
@@ -230,24 +230,37 @@
   // ---------- service worker & pembaruan cangkang ----------
   if (!('serviceWorker' in navigator)) swStatus = 'tidak didukung / bukan HTTPS';
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
+    var perluMuatUlang = false;
+    var pantau = function (sw) {   // laporkan bila instalasi service worker gagal (mis. berkas hilang di GitHub)
+      if (!sw) return;
+      sw.addEventListener('statechange', function () {
+        if (sw.state === 'redundant') swStatus = 'GAGAL instal/aktivasi (periksa semua berkas sudah terunggah di GitHub)';
+        else if (sw.state === 'activated') swStatus = 'aktif';
+      });
+    };
+    var daftarSW = function () {
       navigator.serviceWorker.register('sw.js').then(function (reg) {
         swStatus = 'terdaftar (scope ' + reg.scope + ')' + (navigator.serviceWorker.controller ? ', mengontrol halaman' : ', belum mengontrol halaman (muat ulang sekali)');
-        var tawarkan = function (sw) { $('bar-update').hidden = false; $('btn-update').onclick = function () { sw.postMessage('SKIP_WAITING'); }; };
+        pantau(reg.installing);
+        var tawarkan = function (sw) {
+          $('bar-update').hidden = false;
+          $('btn-update').onclick = function () { perluMuatUlang = true; sw.postMessage('SKIP_WAITING'); };
+        };
         if (reg.waiting && navigator.serviceWorker.controller) tawarkan(reg.waiting);
         reg.addEventListener('updatefound', function () {
           var baru = reg.installing;
           if (!baru) return;
+          pantau(baru);
           baru.addEventListener('statechange', function () {
             if (baru.state === 'installed' && navigator.serviceWorker.controller) tawarkan(baru);
           });
         });
       }).catch(function (e) { swStatus = 'GAGAL didaftarkan: ' + String((e && e.message) || e); /* PWA tetap berjalan tanpa service worker */ });
-      var sudahMuatUlang = false;
       navigator.serviceWorker.addEventListener('controllerchange', function () {
-        if (sudahMuatUlang) return; sudahMuatUlang = true; window.location.reload();
+        if (perluMuatUlang) window.location.reload();   // hanya setelah pengguna menekan "Muat ulang"
       });
-    });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', daftarSW); else daftarSW();
   }
 
   mulaiMuat();
