@@ -39,6 +39,31 @@ yang ditanam di bingkai. Cangkang menanganinya otomatis, berurutan:
 3. Bila masih gagal, muncul bar **"Aplikasi tidak tampil?"** dengan tombol **Buka langsung** / **Selalu buka langsung**
    (membuka aplikasi tanpa bingkai).
 
-Mode yang berhasil diingat untuk peluncuran berikutnya. Untuk mengembalikan ke mode normal, buka alamat PWA
+Mode yang berhasil diingat untuk peluncuran berikutnya.
+
+### Mode diagnosa
+Buka alamat PWA dengan tambahan `?diag` (contoh `https://NAMAANDA.github.io/sim-karyawan/?diag`). Panel kecil di atas layar
+menampilkan: mode yang dipakai, apakah browser mendukung `credentialless`, kapan bingkai termuat, apakah tanda "siap"
+dari aplikasi diterima, dan pesan terakhir dari bingkai. Tiga tombol di panel mencoba tiap mode satu per satu.
+Kirim tangkapan layar panel ini bila ada masalah.
+
+Untuk menguji satu mode saja: `?mode=normal`, `?mode=credentialless`, atau `?mode=langsung`.
+
+### Memaksa buka langsung untuk semua pengguna
+Di `app.js` ubah `var MODE_AWAL = 'otomatis';` menjadi `'langsung'`, lalu unggah ulang. PWA hanya menjadi pintasan
+berikon yang membuka aplikasi langsung (tanpa bingkai), cara yang paling pasti berhasil. Untuk mengembalikan ke mode normal, buka alamat PWA
 dengan tambahan `?reset` (contoh: `https://NAMAANDA.github.io/sim-karyawan/?reset`).
 Catatan: pada mode `credentialless`, sesi login tidak disimpan antar peluncuran (harus login tiap kali dibuka).
+
+## Tidak bisa dipasang?
+Buka `?diag` dan baca baris **Tampilan**, **Prompt pasang**, **Service worker**, **Manifest**, **Ikon**, dan **HTTPS**.
+Penyebab yang paling sering:
+1. **Mode "buka langsung" tersimpan** (dari tombol "Selalu buka langsung" atau `MODE_AWAL = 'langsung'`). Halaman yang
+   langsung berpindah ke script.google.com tidak bisa dipasang. Sekarang di tab browser halaman TETAP terbuka
+   (tampil layar "Aplikasi siap dibuka"); pengalihan otomatis hanya terjadi saat dibuka dari ikon yang sudah terpasang.
+   Buka alamat dengan `?reset` untuk membersihkan pilihan lama.
+2. **Folder `icons` tidak ikut terunggah** (baris Ikon menyebut GAGAL). Unggah ulang foldernya.
+3. **Bukan Chrome/Edge.** Brave dan beberapa browser lain tidak menyediakan "Pasang aplikasi" penuh.
+4. **Ajakan pasang pernah ditutup.** Pakai menu browser (Chrome: tiga titik, lalu *Pasang aplikasi*), atau buka `?reset`.
+5. **Service worker belum aktif.** Buka halaman, tunggu beberapa detik, muat ulang sekali.
+Catatan: "Tambahkan ke layar utama" hanya membuat pintasan. Yang Anda cari adalah **"Pasang aplikasi"**.
